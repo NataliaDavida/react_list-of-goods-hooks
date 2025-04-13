@@ -17,29 +17,45 @@ export const goodsFromServer = [
 ];
 
 enum SortType {
-  alpha,
+  alphabetically,
   length,
-  reverse,
 }
 
-function sortList(someList: string[], params: SortType | '') {
+function sortList(
+  someList: string[],
+  params: SortType | '',
+  reversed: boolean,
+) {
   const preperedList = [...someList];
 
   switch (params) {
-    case SortType.alpha:
-      return preperedList.sort((a, b) => a.localeCompare(b));
+    case SortType.alphabetically:
+      preperedList.sort((a, b) => a.localeCompare(b));
+      break;
     case SortType.length:
-      return preperedList.sort((a, b) => a.length - b.length);
-    case SortType.reverse:
-      return preperedList.reverse();
+      preperedList.sort((a, b) => a.length - b.length);
+      break;
     default:
-      return preperedList;
+      break;
   }
+
+  if (reversed) {
+    preperedList.reverse();
+  }
+
+  return preperedList;
 }
 
 export const App: React.FC = () => {
   const [filterParams, setFilterParams] = useState<SortType | ''>('');
-  const visiblegoods = sortList(goodsFromServer, filterParams);
+  const [reversed, setReversed] = useState(false);
+
+  const visiblegoods = sortList(goodsFromServer, filterParams, reversed);
+
+  const reset = () => {
+    setFilterParams('');
+    setReversed(false);
+  };
 
   return (
     <div className="section content">
@@ -47,9 +63,9 @@ export const App: React.FC = () => {
         <button
           type="button"
           className={cn('button', 'is-info', {
-            'is-light': filterParams !== SortType.alpha
+            'is-light': filterParams !== SortType.alphabetically,
           })}
-          onClick={() => setFilterParams(SortType.alpha)}
+          onClick={() => setFilterParams(SortType.alphabetically)}
         >
           Sort alphabetically
         </button>
@@ -57,7 +73,7 @@ export const App: React.FC = () => {
         <button
           type="button"
           className={cn('button', 'is-success', {
-            'is-light': filterParams !== SortType.length
+            'is-light': filterParams !== SortType.length,
           })}
           onClick={() => setFilterParams(SortType.length)}
         >
@@ -68,18 +84,18 @@ export const App: React.FC = () => {
           type="button"
           data-cy="ReverseButton"
           className={cn('button', 'is-warning', {
-            'is-light': filterParams !== SortType.reverse,
+            'is-light': !reversed,
           })}
-          onClick={() => setFilterParams(SortType.reverse)}
+          onClick={() => setReversed(prev => !prev)}
         >
           Reverse
         </button>
 
-        {filterParams !== '' && (
+        {(filterParams !== '' || reversed) && (
           <button
             type="button"
             className="button is-danger is-light"
-            onClick={() => setFilterParams('')}
+            onClick={reset}
           >
             Reset
           </button>
